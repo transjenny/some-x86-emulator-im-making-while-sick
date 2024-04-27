@@ -76,7 +76,7 @@ class Decoder:
                 opcode = int(bytes.hex(), 16)
                 old_opcode = opcode # grab after just in case there a error
             except ValueError:
-                raise Exception(f"Bytes in opcode list, killing app\nif the opcode is one byte it is:{bytes_backup[:2].hex()}")
+                raise Exception(f"Bytes in opcode list, killing app\nif the opcode is one byte it is:{hex(old_opcode)}\nfor two byte:{hex(int(bytes_backup[:2].hex(), 16))}")
                 import sys
                 sys.exit()
             if opcode > 0xff:

@@ -8,7 +8,7 @@ CPU_SEED = 5 # number of cycles per seccond
 print("This is still an expriment so if stuff doesnt work dont be surprized")
 
 
-BOOT_DEVICE = "FD13BOOT.img"
+BOOT_DEVICE = "Windows 98 Second Edition Boot.img"
 
 print(f"Loading Boot Device {BOOT_DEVICE}")
 
@@ -16,6 +16,13 @@ print(f"Loading Boot Device {BOOT_DEVICE}")
 BOOTIMG = bytes(open(f"boot_drives/{BOOT_DEVICE}",'rb').read())
 
 BootSector = BOOTIMG[:512]
+
+print(f"0x{BootSector[len(BootSector)-2:len(BootSector)].hex()}")
+if(BootSector[len(BootSector)-2:len(BootSector)].hex() != "55aa"):
+    print("not bootable")
+    import sys
+    sys.exit()
+
 
 
 
