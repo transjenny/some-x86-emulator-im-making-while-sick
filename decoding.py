@@ -25,58 +25,18 @@ class Decoder:
         return displacement
     import cpu
     def Decode_ModRm_rm(self,byte, instruction_stream, cpu:cpu.CPU):
-        rm = bytearray(byte[:2])
         
-        rm_int = int(rm.hex(), 16)
-        modbytes = byte[6:].zfill(8)
-        mod_int = int (modbytes,16)
-        
-        mod_displacment = self.Decode_ModRm_mod(byte, instruction_stream, mod_int)
-        output = 0
-        if(mod_int != 3):
-            if(rm_int == 0):
-                output = cpu.CPU_registers['BX'] + cpu.CPU_registers['SI'] + mod_displacment
-                
-            elif(rm_int ==1):
-                output = cpu.CPU_registers['BX']+cpu.CPU_registers['DI'] + mod_displacment
-                
-            elif(rm_int == 2):
-                output = cpu.CPU_registers['BP']+cpu.CPU_registers['SI'] + mod_displacment
-                
-            elif(rm_int == 3):
-                output = cpu.CPU_registers['BP'] + cpu.CPU_registers['DI'] + mod_displacment
-                
-            elif(rm_int == 4):
-                output = cpu.CPU_registers['SI'] + mod_displacment
-                
-            elif(rm_int == 5):
-                output = cpu.CPU_registers['DI'] + mod_displacment
-                
-            elif(rm_int == 6):
-                output = cpu.CPU_registers['BP'] + mod_displacment
-            elif(rm_int == 7):
-                output = cpu.CPU_registers['BX'] + mod_displacment
-        else:
-            if(rm_int == 0):
-                output = cpu.CPU_registers['EAX']
-            elif(rm_int == 1):
-                output = cpu.CPU_registers['ECX']
-            elif(rm_int == 2):
-                output = cpu.CPU_registers['EDX']
-            elif(rm_int == 3):
-                output = cpu.CPU_registers['EBX']
-            elif(rm_int == 4):
-                output = cpu.CPU_registers['ESP']
-            elif (rm_int == 5):
-                output = cpu.CPU_registers['EBP']
-            elif(rm_int == 6):
-                output = cpu.CPU_registers['ESI']
-            elif(rm_int == 7):
-                output = cpu.CPU_registers['EDI']
-        return (output,mod_displacment)
+        rm = byte & 0b00000111
+        mod = (byte & 0b11000000) >> 6
 
-    def Decode_SIB(self,byte_list, displacement):
-        byte = byte_list[0]
+        mod_int = mod
+        rm_int = rm
+        mod_displacment = self.Decode_ModRm_mod(byte, instruction_stream, mod_int)
+        
+        return (rm_int,mod_displacment)
+
+    def Decode_SIB(self,byte, displacement):
+        
         
 
         base = byte & 0b00000111    # Extract the base register
@@ -90,7 +50,7 @@ class Decoder:
 
 
     def Decode_opcode(self,bytes:bytes):
-        
+        bytes_backup = bytes
         opcodes={
             0x00: "add",
             0x01: "add",
@@ -106,16 +66,17 @@ class Decoder:
             0xEB: "jmp",
             0x98: "cbw",
             0x20: "and",
+            0x21: "and",
         }
         size_of_opcode = len(bytes)
-        
+        old_opcode = 0
         opcode = 0
         for i in range(9999):
             try:
-                print(bytes.hex())
                 opcode = int(bytes.hex(), 16)
+                old_opcode = opcode # grab after just in case there a error
             except ValueError:
-                raise Exception("Bytes not opcode, killing app")
+                raise Exception(f"Bytes in opcode list, killing app\nif the opcode is one byte it is:{bytes_backup[:2].hex()}")
                 import sys
                 sys.exit()
             if opcode > 0xff:
@@ -137,7 +98,7 @@ class Decoder:
 
 
     def Decode_registers(self,bytes):
-        byte = ((bytes[0] >> 3)<< 5)
+        byte = bytes & 0b111
         REG = int(byte)
         reg_int = int(REG)
         registers_decoded = ""
@@ -157,6 +118,8 @@ class Decoder:
             registers_decoded = "ESI"
         elif(reg_int == 7):
             registers_decoded = "EDI"
+        else:
+            raise Exception(f"This should`nt be possile \n the 3 bit number is {reg_int}")
         return registers_decoded
     
 
